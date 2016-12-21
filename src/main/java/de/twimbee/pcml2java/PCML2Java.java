@@ -88,9 +88,8 @@ public class PCML2Java {
         // First generate the constants
         if (this.generateConstants) {
             for (Element dataField : children) {
-                String usagePrefix = dataField.getAttributeValue("usage").equals("inherit") ? "" : dataField.getAttributeValue("usage")+"_";
                 String nameRpg = dataField.getAttributeValue("name");
-                String name = toTitleCamelCase(usagePrefix+nameRpg);
+                String name = toTitleCamelCase(nameRpg);
 
                 JFieldVar constant = myClass.field(JMod.STATIC + JMod.PUBLIC + JMod.FINAL, String.class, nameRpg);
                 constant.init(JExpr.lit(name));

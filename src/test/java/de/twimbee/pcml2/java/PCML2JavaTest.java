@@ -13,8 +13,8 @@ public class PCML2JavaTest {
 
     @Test
     public void testToCamelCase() {
-        String structName = "BUCHER_CODE";
-        String expected = "bucherCode";
+        String structName = "FABTESTA_CODE";
+        String expected = "fabtestaCode";
         String camelCase = PCML2Java.toLowerCamelCase(structName);
         assertEquals(expected, camelCase);
     }
@@ -26,11 +26,11 @@ public class PCML2JavaTest {
         beanGenerator.setBeanValidation(true);
         beanGenerator.setGenerateConstants(true);
 
-        String packageName = "de.twimbee.test";
+        String packageName = "it.fabtesta.test";
         String sourceFolder = "src";
         beanGenerator.createJavaClassesForPCMLFiles(packageName, sourceFolder);
-        assertTrue(new File("target/generated-sources/de/twimbee/test/LetterCode.java").exists());
-        assertTrue(new File("target/generated-sources/de/twimbee/test/LetterCodeService.java").exists());
+        assertTrue(new File("target/generated-sources/it/fabtesta/test/LetterCode.java").exists());
+        assertTrue(new File("target/generated-sources/it/fabtesta/test/LetterCodeService.java").exists());
     }
 
 }

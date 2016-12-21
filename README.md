@@ -3,9 +3,12 @@ pcml2java-maven-plugin
 Forked repo from https://github.com/Dr4K4n/pcml2java-maven-plugin.
 
 Generates Java classes from IBM® .PCML-Files (Program Call Markup Language).
+
 Supports both primitive data and struct input/ouput.
 
-Plugin is available in github repository.
+Plugin is available in jitpack repository.
+
+[![](https://jitpack.io/v/fabtesta/pcml2java-maven-plugin.svg)](https://jitpack.io/#fabtesta/pcml2java-maven-plugin)
 
 ## Basic Usage
 
@@ -13,22 +16,18 @@ Include following plugin-block in the pom.xml of your project. Define a sourceFo
 
 ```
 <repositories>
-    <repository>
-        <id>pcml2java-maven-plugin-mvn-repo</id>
-        <url>https://raw.github.com/fabtesta/pcml2java-maven-plugin/mvn-repo/</url>
-        <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>always</updatePolicy>
-        </snapshots>
-    </repository>
+	<repository>
+	    <id>jitpack.io</id>
+	    <url>https://jitpack.io</url>
+	</repository>
 </repositories>
 
 <build>
 	<plugins>
 		<plugin>
-			groupId>it.fabtesta</groupId>
-            <artifactId>pcml2java-maven-plugin</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+			 <groupId>com.github.fabtesta</groupId>
+	    	<artifactId>pcml2java-maven-plugin</artifactId>
+	    	<version>3162748f8d</version>
 			<configuration>
 				<sourceFolder>src/main/resources</sourceFolder>
 				<packageName>it.fabtesta.pcmlbeans</packageName>

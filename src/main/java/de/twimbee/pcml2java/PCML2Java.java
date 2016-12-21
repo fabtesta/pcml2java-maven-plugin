@@ -16,19 +16,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.codemodel.*;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-
-import com.sun.codemodel.JAnnotationUse;
-import com.sun.codemodel.JClassAlreadyExistsException;
-import com.sun.codemodel.JCodeModel;
-import com.sun.codemodel.JDefinedClass;
-import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
 
 public class PCML2Java {
 
@@ -70,27 +62,32 @@ public class PCML2Java {
                 Document doc = builder.build(fis);
 
                 Element rootNode = doc.getRootElement();
+
+                //Must generated structs classes first
                 List<Element> structs = rootNode.getChildren("struct");
                 for (Element struct : structs) {
                     createJavaClass(struct, packageName, destDir);
                 }
+
+                Element program = rootNode.getChild("program");
+                createJavaClass(program, packageName, destDir);
             }
 
-        } catch (JClassAlreadyExistsException | IOException | JDOMException e) {
+        } catch (JClassAlreadyExistsException | IOException | ClassNotFoundException | JDOMException e) {
             throw new RuntimeException("Could not genereate JavaBeans from PCML-Files", e);
         }
     }
 
-    private void createJavaClass(Element struct, String packageName, File destDir) throws JClassAlreadyExistsException,
-            IOException {
-        String structName = struct.getAttributeValue("name");
+     private void createJavaClass(Element node, String packageName, File destDir) throws JClassAlreadyExistsException,
+             IOException, ClassNotFoundException {
+        String nodeName = node.getAttributeValue("name");
 
-        String className = toCamelCase(structName, true);
+        String className = toCamelCase(nodeName, true);
 
         JCodeModel codeModel = new JCodeModel();
         JDefinedClass myClass = codeModel._class(packageName + "." + className);
 
-        List<Element> children = struct.getChildren("data");
+        List<Element> children = node.getChildren("data");
         // First generate the constants
         if (this.generateConstants) {
             for (Element dataField : children) {
@@ -107,17 +104,30 @@ public class PCML2Java {
             String nameRpg = dataField.getAttributeValue("name");
             String name = toCamelCase(nameRpg);
 
-            Class<?> fieldType = mapToJavaType(dataField.getAttributeValue("type"),
-                    dataField.getAttributeValue("length"), dataField.getAttributeValue("precision"));
+            JType fieldType = null;
+            Class<?> primitiveType = null;
+            if (!dataField.getAttributeValue("type").equalsIgnoreCase("struct")) {
+                primitiveType = mapToJavaType(dataField.getAttributeValue("type"),
+                        dataField.getAttributeValue("length"), dataField.getAttributeValue("precision"));
+                fieldType = JPrimitiveType.parse(codeModel, dataField.getAttributeValue("type"));
+            }
+            else
+            {
+                String structName = dataField.getAttributeValue("struct");
+                String structClassName = toCamelCase(structName, true);
+                JCodeModel tmpCodeModel = new JCodeModel();
+                fieldType = tmpCodeModel._class(packageName + "." + structClassName);
+            }
+
             JFieldVar field = myClass.field(JMod.PRIVATE, fieldType, name);
 
             // @javax.validation.constraints.Size(min = 3, max = 3)
-            if (beanValidation && isSizeAnnotationSupported(fieldType)) {
+            if (beanValidation && primitiveType != null && isSizeAnnotationSupported(primitiveType)) {
                 JAnnotationUse sizeValidationAnnotation = field.annotate(javax.validation.constraints.Size.class);
-                sizeValidationAnnotation.param("max", dataField.getAttributeValue("length"));
+                sizeValidationAnnotation.param("max", Integer.parseInt(dataField.getAttributeValue("length")));
             }
 
-            String capitalName = toCamelCase(name, true);
+            String capitalName = toCamelCase(nameRpg, true);
             String getterName = "get" + capitalName;
             JMethod getter = myClass.method(JMod.PUBLIC, fieldType, getterName);
             getter.body()._return(field);
@@ -126,6 +136,7 @@ public class PCML2Java {
             JMethod setter = myClass.method(JMod.PUBLIC, void.class, setterName);
             setter.param(fieldType, name);
             setter.body().assign(JExpr._this().ref(name), JExpr.ref(name));
+
         }
 
         codeModel.build(destDir);
@@ -297,12 +308,12 @@ public class PCML2Java {
     public static String toCamelCase(String structName, boolean firstLetterUppercase) {
         StringBuilder camelCase = new StringBuilder();
         for (int i = 0; i < structName.length(); i++) {
+            char c = structName.charAt(i);
             if (firstLetterUppercase && i == 0) {
-                camelCase.append(structName.charAt(0));
+                camelCase.append(Character.toUpperCase(c));
             } else {
-                char c = structName.charAt(i);
                 if ('_' == c && i + 1 < structName.length()) {
-                    camelCase.append(structName.charAt(++i));
+                    camelCase.append(Character.toUpperCase(structName.charAt(++i)));
                 } else {
                     camelCase.append(Character.toLowerCase(c));
                 }

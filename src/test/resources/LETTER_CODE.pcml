@@ -20,6 +20,8 @@
         <data length="128" name="AUFENTHALTS_BEGINN" type="char" usage="inherit"/>
     </struct>
     <program name="LETTER_CODE_SERVICE" parseorder="DATA" path="/QSYS.LIB/TWIMBEE.LIB/LETTER_CODE.PGM" threadsafe="false">
+        <data name="INPUT1" type="char" length="3" usage="input" />
+        <data name="INPUT2" type="char" length="3" usage="input" />
         <data count="999" name="DATA" struct="LETTER_CODE" type="struct" usage="output"/>
     </program>
 </pcml>

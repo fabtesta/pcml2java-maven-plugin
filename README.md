@@ -27,7 +27,7 @@ Include following plugin-block in the pom.xml of your project. Define a sourceFo
 		<plugin>
 			<groupId>com.github.fabtesta</groupId>
 	    	<artifactId>pcml2java-maven-plugin</artifactId>
-	    	<version>1.0.0</version>
+	    	<version>1.0.1</version>
 			<configuration>
 				<sourceFolder>src/main/resources</sourceFolder>
 				<packageName>it.fabtesta.pcmlbeans</packageName>

@@ -1,5 +1,12 @@
 package de.twimbee.pcml2java;
 
+import com.google.common.base.CaseFormat;
+import com.sun.codemodel.*;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,17 +17,7 @@ import java.net.URLClassLoader;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import com.sun.codemodel.*;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
+import java.util.*;
 
 public class PCML2Java {
 
@@ -82,7 +79,7 @@ public class PCML2Java {
              IOException, ClassNotFoundException {
         String nodeName = node.getAttributeValue("name");
 
-        String className = toCamelCase(nodeName, true);
+        String className = toTitleCamelCase(nodeName);
 
         JCodeModel codeModel = new JCodeModel();
         JDefinedClass myClass = codeModel._class(packageName + "." + className);
@@ -91,8 +88,9 @@ public class PCML2Java {
         // First generate the constants
         if (this.generateConstants) {
             for (Element dataField : children) {
+                String usagePrefix = dataField.getAttributeValue("usage").equals("inherit") ? "" : dataField.getAttributeValue("usage")+"_";
                 String nameRpg = dataField.getAttributeValue("name");
-                String name = toCamelCase(nameRpg);
+                String name = toTitleCamelCase(usagePrefix+nameRpg);
 
                 JFieldVar constant = myClass.field(JMod.STATIC + JMod.PUBLIC + JMod.FINAL, String.class, nameRpg);
                 constant.init(JExpr.lit(name));
@@ -101,8 +99,9 @@ public class PCML2Java {
 
         // Then generate the fields
         for (Element dataField : children) {
+            String usagePrefix = dataField.getAttributeValue("usage").equals("inherit") ? "" : dataField.getAttributeValue("usage")+"_";
             String nameRpg = dataField.getAttributeValue("name");
-            String name = toCamelCase(nameRpg);
+            String name = toLowerCamelCase(usagePrefix+nameRpg);
 
             JType fieldType = null;
             Class<?> primitiveType = null;
@@ -114,7 +113,7 @@ public class PCML2Java {
             else
             {
                 String structName = dataField.getAttributeValue("struct");
-                String structClassName = toCamelCase(structName, true);
+                String structClassName = toTitleCamelCase(structName);
                 JCodeModel tmpCodeModel = new JCodeModel();
                 fieldType = tmpCodeModel._class(packageName + "." + structClassName);
             }
@@ -127,7 +126,7 @@ public class PCML2Java {
                 sizeValidationAnnotation.param("max", Integer.parseInt(dataField.getAttributeValue("length")));
             }
 
-            String capitalName = toCamelCase(nameRpg, true);
+            String capitalName = toTitleCamelCase(usagePrefix+nameRpg);
             String getterName = "get" + capitalName;
             JMethod getter = myClass.method(JMod.PUBLIC, fieldType, getterName);
             getter.body()._return(field);
@@ -298,28 +297,15 @@ public class PCML2Java {
     /**
      * Converts a string from UNDERSCORE_CASE to camelCase
      * 
-     * @param structName
+     * @param name
      * @return
      */
-    public static String toCamelCase(String structName) {
-        return toCamelCase(structName, false);
+    public static String toLowerCamelCase(String name) {
+        return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name);
     }
 
-    public static String toCamelCase(String structName, boolean firstLetterUppercase) {
-        StringBuilder camelCase = new StringBuilder();
-        for (int i = 0; i < structName.length(); i++) {
-            char c = structName.charAt(i);
-            if (firstLetterUppercase && i == 0) {
-                camelCase.append(Character.toUpperCase(c));
-            } else {
-                if ('_' == c && i + 1 < structName.length()) {
-                    camelCase.append(Character.toUpperCase(structName.charAt(++i)));
-                } else {
-                    camelCase.append(Character.toLowerCase(c));
-                }
-            }
-        }
-        return camelCase.toString();
+    public static String toTitleCamelCase(String name) {
+        return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name);
     }
 
     /**

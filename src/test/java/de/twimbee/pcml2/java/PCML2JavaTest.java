@@ -15,7 +15,7 @@ public class PCML2JavaTest {
     public void testToCamelCase() {
         String structName = "BUCHER_CODE";
         String expected = "bucherCode";
-        String camelCase = PCML2Java.toCamelCase(structName);
+        String camelCase = PCML2Java.toLowerCamelCase(structName);
         assertEquals(expected, camelCase);
     }
 
@@ -30,6 +30,7 @@ public class PCML2JavaTest {
         String sourceFolder = "src";
         beanGenerator.createJavaClassesForPCMLFiles(packageName, sourceFolder);
         assertTrue(new File("target/generated-sources/de/twimbee/test/LetterCode.java").exists());
+        assertTrue(new File("target/generated-sources/de/twimbee/test/LetterCodeService.java").exists());
     }
 
 }

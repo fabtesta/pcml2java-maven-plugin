@@ -89,10 +89,10 @@ public class PCML2Java {
         if (this.generateConstants) {
             for (Element dataField : children) {
                 String nameRpg = dataField.getAttributeValue("name");
-                String name = toTitleCamelCase(nameRpg);
+                //String name = toTitleCamelCase(nameRpg);
 
                 JFieldVar constant = myClass.field(JMod.STATIC + JMod.PUBLIC + JMod.FINAL, String.class, nameRpg);
-                constant.init(JExpr.lit(name));
+                constant.init(JExpr.lit(nameRpg));
             }
         }
 

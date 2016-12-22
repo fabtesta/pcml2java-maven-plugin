@@ -1,10 +1,9 @@
-package de.twimbee.pcml2java.maven;
+package com.github.fabtesta.pcml2java.maven;
 
+import com.github.fabtesta.pcml2java.PCML2Java;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-
-import de.twimbee.pcml2java.PCML2Java;
 
 /**
  * @goal gensrc

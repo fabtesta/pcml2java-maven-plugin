@@ -1,4 +1,4 @@
-package de.twimbee.pcml2java;
+package com.github.fabtesta.pcml2java;
 
 import com.google.common.base.CaseFormat;
 import com.sun.codemodel.*;
@@ -107,7 +107,7 @@ public class PCML2Java {
             if (!dataField.getAttributeValue("type").equalsIgnoreCase("struct")) {
                 primitiveType = mapToJavaType(dataField.getAttributeValue("type"),
                         dataField.getAttributeValue("length"), dataField.getAttributeValue("precision"));
-                fieldType = JPrimitiveType.parse(codeModel, dataField.getAttributeValue("type"));
+                fieldType = codeModel.ref(primitiveType);
             }
             else
             {
@@ -292,6 +292,59 @@ public class PCML2Java {
                 return String.class;
         }
     }
+
+//    private static JType mapToJType(String type, JCodeModel codeModel) {
+//        switch (type) {
+//            case "char":
+//                return codeModel.directClass("String");
+//            case "byte":
+//                return byte[].class;
+//            case "int":
+//                switch (length) {
+//                    case 2:
+//                        if (precision < 16) {
+//                            return Short.class;
+//                        } else {
+//                            return Integer.class;
+//                        }
+//                    case 4:
+//                        if (precision < 32) {
+//                            return Integer.class;
+//                        } else {
+//                            return Long.class;
+//                        }
+//                    case 8:
+//                        if (precision < 64) {
+//                            return Long.class;
+//                        } else {
+//                            return BigInteger.class;
+//                        }
+//                    default:
+//                        return Long.class;
+//                }
+//            case "packed":
+//                return BigDecimal.class;
+//            case "zoned":
+//                return BigDecimal.class;
+//            case "float":
+//                switch (length) {
+//                    case 4:
+//                        return Float.class;
+//                    case 8:
+//                        return Double.class;
+//                    default:
+//                        return Double.class;
+//                }
+//            case "date":
+//                return Date.class;
+//            case "time":
+//                return Time.class;
+//            case "timestamp":
+//                return Timestamp.class;
+//            default:
+//                return String.class;
+//        }
+//    }
 
     /**
      * Converts a string from UNDERSCORE_CASE to camelCase

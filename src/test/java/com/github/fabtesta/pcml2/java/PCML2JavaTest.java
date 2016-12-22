@@ -1,4 +1,4 @@
-package de.twimbee.pcml2.java;
+package com.github.fabtesta.pcml2.java;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -7,7 +7,7 @@ import java.io.File;
 
 import org.junit.Test;
 
-import de.twimbee.pcml2java.PCML2Java;
+import com.github.fabtesta.pcml2java.PCML2Java;
 
 public class PCML2JavaTest {
 
@@ -26,11 +26,11 @@ public class PCML2JavaTest {
         beanGenerator.setBeanValidation(true);
         beanGenerator.setGenerateConstants(true);
 
-        String packageName = "it.fabtesta.test";
+        String packageName = "com.github.fabtesta.test";
         String sourceFolder = "src";
         beanGenerator.createJavaClassesForPCMLFiles(packageName, sourceFolder);
-        assertTrue(new File("target/generated-sources/it/fabtesta/test/LetterCode.java").exists());
-        assertTrue(new File("target/generated-sources/it/fabtesta/test/LetterCodeService.java").exists());
+        assertTrue(new File("target/generated-sources/com/github/fabtesta/test/LetterCode.java").exists());
+        assertTrue(new File("target/generated-sources/com/github/fabtesta/test/LetterCodeService.java").exists());
     }
 
 }

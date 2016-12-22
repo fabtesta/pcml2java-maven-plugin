@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.fabtesta</groupId>
 	<artifactId>pcml2java-maven-plugin</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<packaging>maven-plugin</packaging>
 	<description>Generates Java classes from IBM® .PCML-Files (Program Call Markup Language)</description>
 
@@ -25,6 +25,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>

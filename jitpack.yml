@@ -2,5 +2,5 @@ before_install:
    - echo "cleaning before install (jitpack bug)"
    - mvn clean
 install:
-   - echo "cleaning before install (jitpack bug)"
+   - echo "set debug output option"
    - mvn install -DskipTests -e -X

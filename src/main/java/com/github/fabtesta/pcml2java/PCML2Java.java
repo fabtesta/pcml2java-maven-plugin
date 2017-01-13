@@ -1,6 +1,5 @@
 package com.github.fabtesta.pcml2java;
 
-import com.github.fabtesta.pcml2java.maven.PCMLBeanType;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -41,6 +40,10 @@ public class PCML2Java {
     private String requestSuperClass;
     private String responseSuperClass;
 
+    public static final String InnerBean = "InnerBean";
+    public static final String RequestBean = "RequestBean";
+    public static final String ResponseBean = "ResponseBean";
+
     public PCML2Java(boolean generateConstants, boolean beanValidation, String packageName, String sourceDirectory, String requestSuperClass, String responseSuperClass) {
         this.generateConstants = generateConstants;
         this.beanValidation = beanValidation;
@@ -80,12 +83,12 @@ public class PCML2Java {
                 //Must generated structs classes first
                 List<Element> structs = rootNode.getChildren("struct");
                 for (Element struct : structs) {
-                    createJavaClass(struct, packageName, destDir, PCMLBeanType.InnerBean);
+                    createJavaClass(struct, packageName, destDir, InnerBean);
                 }
 
                 Element program = rootNode.getChild("program");
-                createJavaClass(program, packageName, destDir, PCMLBeanType.RequestBean);
-                createJavaClass(program, packageName, destDir, PCMLBeanType.ResponseBean);
+                createJavaClass(program, packageName, destDir, RequestBean);
+                createJavaClass(program, packageName, destDir, ResponseBean);
             }
 
         } catch (JClassAlreadyExistsException | IOException | ClassNotFoundException | JDOMException e) {
@@ -93,21 +96,21 @@ public class PCML2Java {
         }
     }
 
-    private void createJavaClass(Element node, String packageName, File destDir, PCMLBeanType classType) throws JClassAlreadyExistsException,
+    private void createJavaClass(Element node, String packageName, File destDir, String pcmlBeanType) throws JClassAlreadyExistsException,
             IOException, ClassNotFoundException {
         String nodeName = node.getAttributeValue("name");
 
         String classPostFix = "";
         String usageTarget = "";
-        if (classType == PCMLBeanType.RequestBean) {
+        if (pcmlBeanType == RequestBean) {
             classPostFix = "Request";
             usageTarget = "input";
         }
-        else if (classType == PCMLBeanType.ResponseBean) {
+        else if (pcmlBeanType == ResponseBean) {
             classPostFix = "Response";
             usageTarget = "output";
         }
-        else if (classType == PCMLBeanType.InnerBean) {
+        else if (pcmlBeanType == InnerBean) {
             classPostFix = "";
             usageTarget = "inherit";
         }
@@ -117,13 +120,13 @@ public class PCML2Java {
         JCodeModel codeModel = new JCodeModel();
         JDefinedClass myClass = codeModel._class(packageName + "." + className);
 
-        if(!requestSuperClass.isEmpty() && classType == PCMLBeanType.RequestBean) {
+        if(!requestSuperClass.isEmpty() && pcmlBeanType == RequestBean) {
             JCodeModel tmpCodeModel = new JCodeModel();
             JDefinedClass superClass = tmpCodeModel._class(requestSuperClass);
             myClass._extends(superClass);
         }
 
-        if(!responseSuperClass.isEmpty() && classType == PCMLBeanType.ResponseBean) {
+        if(!responseSuperClass.isEmpty() && pcmlBeanType == ResponseBean) {
             JCodeModel tmpCodeModel = new JCodeModel();
             JDefinedClass superClass = tmpCodeModel._class(responseSuperClass);
             myClass._extends(superClass);

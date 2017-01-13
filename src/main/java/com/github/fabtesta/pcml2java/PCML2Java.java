@@ -1,5 +1,6 @@
 package com.github.fabtesta.pcml2java;
 
+import com.github.fabtesta.pcml2java.maven.PCMLBeanType;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -31,12 +32,6 @@ public class PCML2Java {
         sizeAnnotationTypes.add(CharSequence.class);
         sizeAnnotationTypes.add(Collection.class);
         sizeAnnotationTypes.add(Map.class);
-    }
-
-    private enum ClassType {
-        InnerBean,
-        RequestBean,
-        ResponseBean
     }
 
     private boolean generateConstants;
@@ -85,12 +80,12 @@ public class PCML2Java {
                 //Must generated structs classes first
                 List<Element> structs = rootNode.getChildren("struct");
                 for (Element struct : structs) {
-                    createJavaClass(struct, packageName, destDir, ClassType.InnerBean);
+                    createJavaClass(struct, packageName, destDir, PCMLBeanType.InnerBean);
                 }
 
                 Element program = rootNode.getChild("program");
-                createJavaClass(program, packageName, destDir, ClassType.RequestBean);
-                createJavaClass(program, packageName, destDir, ClassType.ResponseBean);
+                createJavaClass(program, packageName, destDir, PCMLBeanType.RequestBean);
+                createJavaClass(program, packageName, destDir, PCMLBeanType.ResponseBean);
             }
 
         } catch (JClassAlreadyExistsException | IOException | ClassNotFoundException | JDOMException e) {
@@ -98,21 +93,21 @@ public class PCML2Java {
         }
     }
 
-    private void createJavaClass(Element node, String packageName, File destDir, ClassType classType) throws JClassAlreadyExistsException,
+    private void createJavaClass(Element node, String packageName, File destDir, PCMLBeanType classType) throws JClassAlreadyExistsException,
             IOException, ClassNotFoundException {
         String nodeName = node.getAttributeValue("name");
 
         String classPostFix = "";
         String usageTarget = "";
-        if (classType == ClassType.RequestBean) {
+        if (classType == PCMLBeanType.RequestBean) {
             classPostFix = "Request";
             usageTarget = "input";
         }
-        else if (classType == ClassType.ResponseBean) {
+        else if (classType == PCMLBeanType.ResponseBean) {
             classPostFix = "Response";
             usageTarget = "output";
         }
-        else if (classType == ClassType.InnerBean) {
+        else if (classType == PCMLBeanType.InnerBean) {
             classPostFix = "";
             usageTarget = "inherit";
         }
@@ -122,13 +117,13 @@ public class PCML2Java {
         JCodeModel codeModel = new JCodeModel();
         JDefinedClass myClass = codeModel._class(packageName + "." + className);
 
-        if(!requestSuperClass.isEmpty() && classType == ClassType.RequestBean) {
+        if(!requestSuperClass.isEmpty() && classType == PCMLBeanType.RequestBean) {
             JCodeModel tmpCodeModel = new JCodeModel();
             JDefinedClass superClass = tmpCodeModel._class(requestSuperClass);
             myClass._extends(superClass);
         }
 
-        if(!responseSuperClass.isEmpty() && classType == ClassType.ResponseBean) {
+        if(!responseSuperClass.isEmpty() && classType == PCMLBeanType.ResponseBean) {
             JCodeModel tmpCodeModel = new JCodeModel();
             JDefinedClass superClass = tmpCodeModel._class(responseSuperClass);
             myClass._extends(superClass);

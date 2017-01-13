@@ -29,7 +29,7 @@ Include following plugin-block in the pom.xml of your project. Define a sourceFo
 		<plugin>
 			<groupId>com.github.fabtesta</groupId>
 	    	<artifactId>pcml2java-maven-plugin</artifactId>
-	    	<version>2.0.3</version>
+	    	<version>2.0.4</version>
 			<configuration>
 				<sourceFolder>src/main/resources</sourceFolder>
 				<packageName>com.github.fabtesta.test</packageName>

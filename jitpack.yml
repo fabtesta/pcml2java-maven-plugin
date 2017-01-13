@@ -1,0 +1,3 @@
+install:
+   - echo "cleaning before install (jitpack bug)"
+   - mvn clean install -DskipTests

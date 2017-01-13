@@ -21,16 +21,18 @@ public class PCML2JavaTest {
 
     @Test
     public void testCreateJavaClassesForPCMLFiles() {
-        PCML2Java beanGenerator = new PCML2Java();
-
-        beanGenerator.setBeanValidation(true);
-        beanGenerator.setGenerateConstants(true);
 
         String packageName = "com.github.fabtesta.test";
         String sourceFolder = "src";
-        beanGenerator.createJavaClassesForPCMLFiles(packageName, sourceFolder);
+        String requestSuperClass = "com.github.fabtesta.test.ServiceRequest";
+        String responseSuperClass = "com.github.fabtesta.test.ServiceResponse";
+
+        PCML2Java beanGenerator = new PCML2Java(true,true,packageName, sourceFolder,requestSuperClass, responseSuperClass);
+
+        beanGenerator.createJavaClassesForPCMLFiles();
         assertTrue(new File("target/generated-sources/com/github/fabtesta/test/LetterCode.java").exists());
-        assertTrue(new File("target/generated-sources/com/github/fabtesta/test/LetterCodeService.java").exists());
+        assertTrue(new File("target/generated-sources/com/github/fabtesta/test/LetterCodeServiceRequest.java").exists());
+        assertTrue(new File("target/generated-sources/com/github/fabtesta/test/LetterCodeServiceResponse.java").exists());
     }
 
 }

@@ -41,13 +41,24 @@ public class PCML2JavaGenerate extends AbstractMojo {
      */
     private boolean beanValidation;
 
+    /**
+     * The superclass for all PCML request beans
+     *
+     * @parameter
+     */
+    private String requestSuperClass;
+
+    /**
+     * The superclass for all PCML response beans
+     *
+     * @parameter
+     */
+    private String responseSuperClass;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
-        PCML2Java pcml2Java = new PCML2Java();
-        pcml2Java.setGenerateConstants(generateConstants);
-        pcml2Java.setBeanValidation(beanValidation);
-
+        PCML2Java pcml2Java = new PCML2Java(generateConstants, beanValidation,packageName, sourceFolder, requestSuperClass, responseSuperClass);
         getLog().info("generating for " + packageName + " from " + sourceFolder);
         if (generateConstants) {
             getLog().info("generating constants for all fields");
@@ -55,6 +66,15 @@ public class PCML2JavaGenerate extends AbstractMojo {
         if (beanValidation) {
             getLog().info("annotating supported fields with @Size(max=?) Bean-Validation");
         }
-        pcml2Java.createJavaClassesForPCMLFiles(packageName, sourceFolder);
+
+        if (!requestSuperClass.isEmpty()) {
+            getLog().info("requests superclass " + requestSuperClass);
+        }
+
+        if (!responseSuperClass.isEmpty()) {
+            getLog().info("responses superclass " + responseSuperClass);
+        }
+
+        pcml2Java.createJavaClassesForPCMLFiles();
     }
 }

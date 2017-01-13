@@ -1,6 +1,8 @@
 package com.github.fabtesta.pcml2java;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.sun.codemodel.*;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -24,16 +26,36 @@ public class PCML2Java {
     private static final String GENERATED_SOURCES_DIR = "target/generated-sources";
 
     private static final List<Class<?>> sizeAnnotationTypes = new ArrayList<>();
+
     static {
         sizeAnnotationTypes.add(CharSequence.class);
         sizeAnnotationTypes.add(Collection.class);
         sizeAnnotationTypes.add(Map.class);
     }
 
+    private enum ClassType {
+        InnerBean,
+        RequestBean,
+        ResponseBean
+    }
+
     private boolean generateConstants;
     private boolean beanValidation;
+    private String packageName;
+    private String sourceDirectory;
+    private String requestSuperClass;
+    private String responseSuperClass;
 
-    public void createJavaClassesForPCMLFiles(String packageName, String sourceDirectory) {
+    public PCML2Java(boolean generateConstants, boolean beanValidation, String packageName, String sourceDirectory, String requestSuperClass, String responseSuperClass) {
+        this.generateConstants = generateConstants;
+        this.beanValidation = beanValidation;
+        this.packageName = packageName;
+        this.sourceDirectory = sourceDirectory;
+        this.requestSuperClass = requestSuperClass;
+        this.responseSuperClass = responseSuperClass;
+    }
+
+    public void createJavaClassesForPCMLFiles() {
         try {
             // TODO outputDir configurable? maven restrictions?
             File destDir = new File(GENERATED_SOURCES_DIR);
@@ -63,11 +85,12 @@ public class PCML2Java {
                 //Must generated structs classes first
                 List<Element> structs = rootNode.getChildren("struct");
                 for (Element struct : structs) {
-                    createJavaClass(struct, packageName, destDir);
+                    createJavaClass(struct, packageName, destDir, ClassType.InnerBean);
                 }
 
                 Element program = rootNode.getChild("program");
-                createJavaClass(program, packageName, destDir);
+                createJavaClass(program, packageName, destDir, ClassType.RequestBean);
+                createJavaClass(program, packageName, destDir, ClassType.ResponseBean);
             }
 
         } catch (JClassAlreadyExistsException | IOException | ClassNotFoundException | JDOMException e) {
@@ -75,16 +98,47 @@ public class PCML2Java {
         }
     }
 
-     private void createJavaClass(Element node, String packageName, File destDir) throws JClassAlreadyExistsException,
-             IOException, ClassNotFoundException {
+    private void createJavaClass(Element node, String packageName, File destDir, ClassType classType) throws JClassAlreadyExistsException,
+            IOException, ClassNotFoundException {
         String nodeName = node.getAttributeValue("name");
 
-        String className = toTitleCamelCase(nodeName);
+        String classPostFix = "";
+        String usageTarget = "";
+        if (classType == ClassType.RequestBean) {
+            classPostFix = "Request";
+            usageTarget = "input";
+        }
+        else if (classType == ClassType.ResponseBean) {
+            classPostFix = "Response";
+            usageTarget = "output";
+        }
+        else if (classType == ClassType.InnerBean) {
+            classPostFix = "";
+            usageTarget = "inherit";
+        }
+
+        String className = toTitleCamelCase(nodeName)+classPostFix;
 
         JCodeModel codeModel = new JCodeModel();
         JDefinedClass myClass = codeModel._class(packageName + "." + className);
 
-        List<Element> children = node.getChildren("data");
+        if(!requestSuperClass.isEmpty() && classType == ClassType.RequestBean) {
+            JCodeModel tmpCodeModel = new JCodeModel();
+            JDefinedClass superClass = tmpCodeModel._class(requestSuperClass);
+            myClass._extends(superClass);
+        }
+
+        if(!responseSuperClass.isEmpty() && classType == ClassType.ResponseBean) {
+            JCodeModel tmpCodeModel = new JCodeModel();
+            JDefinedClass superClass = tmpCodeModel._class(responseSuperClass);
+            myClass._extends(superClass);
+        }
+
+        final String finalUsageTarget = usageTarget;
+        Predicate<Element> predicate = input -> input.getAttributeValue("usage").equals(finalUsageTarget);
+
+        Collection<Element> children = Collections2.filter(node.getChildren("data"), predicate);
+
         // First generate the constants
         if (this.generateConstants) {
             for (Element dataField : children) {
@@ -98,9 +152,9 @@ public class PCML2Java {
 
         // Then generate the fields
         for (Element dataField : children) {
-            String usagePrefix = dataField.getAttributeValue("usage").equals("inherit") ? "" : dataField.getAttributeValue("usage")+"_";
+            String usagePrefix = dataField.getAttributeValue("usage").equals("inherit") ? "" : dataField.getAttributeValue("usage") + "_";
             String nameRpg = dataField.getAttributeValue("name");
-            String name = toLowerCamelCase(usagePrefix+nameRpg);
+            String name = toLowerCamelCase(usagePrefix + nameRpg);
 
             JType fieldType = null;
             Class<?> primitiveType = null;
@@ -108,9 +162,7 @@ public class PCML2Java {
                 primitiveType = mapToJavaType(dataField.getAttributeValue("type"),
                         dataField.getAttributeValue("length"), dataField.getAttributeValue("precision"));
                 fieldType = codeModel.ref(primitiveType);
-            }
-            else
-            {
+            } else {
                 String structName = dataField.getAttributeValue("struct");
                 String structClassName = toTitleCamelCase(structName);
                 JCodeModel tmpCodeModel = new JCodeModel();
@@ -125,7 +177,7 @@ public class PCML2Java {
                 sizeValidationAnnotation.param("max", Integer.parseInt(dataField.getAttributeValue("length")));
             }
 
-            String capitalName = toTitleCamelCase(usagePrefix+nameRpg);
+            String capitalName = toTitleCamelCase(usagePrefix + nameRpg);
             String getterName = "get" + capitalName;
             JMethod getter = myClass.method(JMod.PUBLIC, fieldType, getterName);
             getter.body()._return(field);
@@ -151,7 +203,7 @@ public class PCML2Java {
 
     /**
      * Finds the correct Java class for the given parameters
-     * 
+     * <p>
      * <table border=1>
      * <tr valign=top>
      * <th>PCML Description</th>
@@ -167,38 +219,38 @@ public class PCML2Java {
      * </tr>
      * <tr valign=top>
      * <td><code>type=int<br>
-                             length=2<br>
-                             precision=15</td>
+     * length=2<br>
+     * precision=15</td>
      * <td><code>Short</code></td>
      * </tr>
      * <tr valign=top>
      * <td><code>type=int<br>
-                             length=2<br>
-                             precision=16</td>
+     * length=2<br>
+     * precision=16</td>
      * <td><code>Integer</code></td>
      * </tr>
      * <tr valign=top>
      * <td><code>type=int<br>
-                             length=4<br>
-                             precision=31</td>
+     * length=4<br>
+     * precision=31</td>
      * <td><code>Integer</code></td>
      * </tr>
      * <tr valign=top>
      * <td><code>type=int<br>
-                             length=4<br>
-                             precision=32</td>
+     * length=4<br>
+     * precision=32</td>
      * <td><code>Long</code></td>
      * </tr>
      * <tr valign=top>
      * <td><code>type=int<br>
-                             length=8<br>
-                             precision=63</td>
+     * length=8<br>
+     * precision=63</td>
      * <td><code>Long</code></td>
      * </tr>
      * <tr valign=top>
      * <td><code>type=int<br>
-                             length=8<br>
-                             precision=64</td>
+     * length=8<br>
+     * precision=64</td>
      * <td><code>BigInteger</code></td>
      * </tr>
      * <tr valign=top>
@@ -211,12 +263,12 @@ public class PCML2Java {
      * </tr>
      * <tr valign=top>
      * <td><code>type=float<br>
-                             length=4</td>
+     * length=4</td>
      * <td><code>Float</code></td>
      * </tr>
      * <tr valign=top>
      * <td><code>type=float<br>
-                             length=8</td>
+     * length=8</td>
      * <td><code>Double</code></td>
      * </tr>
      * <tr valign=top>
@@ -232,7 +284,7 @@ public class PCML2Java {
      * <td><code>java.sql.Timestamp</code></td>
      * </tr>
      * </table>
-     * 
+     *
      * @param attributeValue
      * @param attributeValue2
      * @return
@@ -348,7 +400,7 @@ public class PCML2Java {
 
     /**
      * Converts a string from UNDERSCORE_CASE to camelCase
-     * 
+     *
      * @param name
      * @return
      */
@@ -362,7 +414,7 @@ public class PCML2Java {
 
     /**
      * returns a list of all .pcml files in the classpath
-     * 
+     *
      * @return
      */
     public List<File> findPCMLFilesInClasspath() {
@@ -399,13 +451,4 @@ public class PCML2Java {
         }
         return result;
     }
-
-    public void setGenerateConstants(boolean generateConstants) {
-        this.generateConstants = generateConstants;
-    }
-
-    public void setBeanValidation(boolean beanValidation) {
-        this.beanValidation = beanValidation;
-    }
-
 }

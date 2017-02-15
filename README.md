@@ -14,7 +14,10 @@ Latest build
 
 ## Basic Usage
 
-Include following plugin-block in the pom.xml of your project. Define a sourceFolder where your PCML-Files are located and a packageName for the generated classes.
+Include following plugin-block in the pom.xml of your project. 
+Define a sourceFolder where your PCML-Files are located and a packageName for the generated classes.
+
+From version 2.1.0 supports struct arrays
 
 ```
 <repositories>
@@ -29,7 +32,7 @@ Include following plugin-block in the pom.xml of your project. Define a sourceFo
 		<plugin>
 			<groupId>com.github.fabtesta</groupId>
 	    	<artifactId>pcml2java-maven-plugin</artifactId>
-	    	<version>2.0.5</version>
+	    	<version>2.1.0</version>
 			<configuration>
 				<sourceFolder>src/main/resources</sourceFolder>
 				<packageName>com.github.fabtesta.test</packageName>

@@ -155,6 +155,7 @@ public class PCML2Java {
             String name = toLowerCamelCase(usagePrefix + nameRpg);
 
             JType fieldType = null;
+            JClass fieldArrayClass = null;
             Class<?> primitiveType = null;
             if (!dataField.getAttributeValue("type").equalsIgnoreCase("struct")) {
                 primitiveType = mapToJavaType(dataField.getAttributeValue("type"),
@@ -163,11 +164,20 @@ public class PCML2Java {
             } else {
                 String structName = dataField.getAttributeValue("struct");
                 String structClassName = toTitleCamelCase(structName);
+                boolean structIsArray = Integer.parseInt(dataField.getAttributeValue("count")) > 1;
                 JCodeModel tmpCodeModel = new JCodeModel();
                 fieldType = tmpCodeModel._class(packageName + "." + structClassName);
+                if(structIsArray)
+                {
+                    JClass genericArray = tmpCodeModel.ref(ArrayList.class);
+                    fieldArrayClass = genericArray.narrow(fieldType);
+                }
             }
-
-            JFieldVar field = myClass.field(JMod.PRIVATE, fieldType, name);
+            JFieldVar field = null;
+            if(fieldArrayClass != null)
+                field = myClass.field(JMod.PRIVATE, fieldArrayClass, name);
+            else
+                field = myClass.field(JMod.PRIVATE, fieldType, name);
 
             // @javax.validation.constraints.Size(min = 3, max = 3)
             if (beanValidation && primitiveType != null && isSizeAnnotationSupported(primitiveType)) {
@@ -177,12 +187,12 @@ public class PCML2Java {
 
             String capitalName = toTitleCamelCase(usagePrefix + nameRpg);
             String getterName = "get" + capitalName;
-            JMethod getter = myClass.method(JMod.PUBLIC, fieldType, getterName);
+            JMethod getter = myClass.method(JMod.PUBLIC, fieldArrayClass != null ? fieldArrayClass : fieldType, getterName);
             getter.body()._return(field);
 
             String setterName = "set" + capitalName;
             JMethod setter = myClass.method(JMod.PUBLIC, void.class, setterName);
-            setter.param(fieldType, name);
+            setter.param(fieldArrayClass != null ? fieldArrayClass : fieldType, name);
             setter.body().assign(JExpr._this().ref(name), JExpr.ref(name));
 
         }

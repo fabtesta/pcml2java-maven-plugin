@@ -30,9 +30,9 @@ public class PCML2JavaTest {
         PCML2Java beanGenerator = new PCML2Java(true,true,packageName, sourceFolder,requestSuperClass, responseSuperClass);
 
         beanGenerator.createJavaClassesForPCMLFiles();
-        assertTrue(new File("target/generated-sources/com/github/fabtesta/test/LetterCode.java").exists());
-        assertTrue(new File("target/generated-sources/com/github/fabtesta/test/LetterCodeServiceRequest.java").exists());
-        assertTrue(new File("target/generated-sources/com/github/fabtesta/test/LetterCodeServiceResponse.java").exists());
+        assertTrue(new File("target/generated-sources/com/github/fabtesta/test/lettercodeservice/LetterCode.java").exists());
+        assertTrue(new File("target/generated-sources/com/github/fabtesta/test/lettercodeservice/LetterCodeServiceRequest.java").exists());
+        assertTrue(new File("target/generated-sources/com/github/fabtesta/test/lettercodeservice/LetterCodeServiceResponse.java").exists());
     }
 
 }

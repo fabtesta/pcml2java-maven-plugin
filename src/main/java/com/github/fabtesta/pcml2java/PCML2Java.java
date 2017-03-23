@@ -81,16 +81,16 @@ public class PCML2Java {
                 Element rootNode = doc.getRootElement();
 
                 Element program = rootNode.getChild("program");
-                packageName = packageName+"."+toTitleCamelCase(program.getAttributeValue("name")).toLowerCase();
+                String currentProgramPackageName = packageName+"."+toTitleCamelCase(program.getAttributeValue("name")).toLowerCase();
 
                 //Must generated structs classes first
                 List<Element> structs = rootNode.getChildren("struct");
                 for (Element struct : structs) {
-                    createJavaClass(struct, packageName, destDir, InnerBean);
+                    createJavaClass(struct, currentProgramPackageName, destDir, InnerBean);
                 }
 
-                createJavaClass(program, packageName, destDir, RequestBean);
-                createJavaClass(program, packageName, destDir, ResponseBean);
+                createJavaClass(program, currentProgramPackageName, destDir, RequestBean);
+                createJavaClass(program, currentProgramPackageName, destDir, ResponseBean);
             }
 
         } catch (JClassAlreadyExistsException | IOException | ClassNotFoundException | JDOMException e) {

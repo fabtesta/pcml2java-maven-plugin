@@ -18,6 +18,7 @@ Include following plugin-block in the pom.xml of your project.
 Define a sourceFolder where your PCML-Files are located and a packageName for the generated classes.
 
 From version 2.1.0 supports struct arrays
+From version 2.3.0 supports same struct names for different programs
 
 ```
 <repositories>

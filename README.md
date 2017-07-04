@@ -14,7 +14,7 @@ Travis status [![Build Status](https://travis-ci.org/fabtesta/pcml2java-maven-pl
 
 ## Features
 From version 2.1.0 supports struct arrays.  
-From version 2.3.0 supports same struct names for different programs.
+From version 2.3.0 supports same struct names for different programs.  
 From version 2.4.0 supports
 1) arrays size validation through java validation api annotation.
 2) primitive arrays size single elements validation through pcml2java-validator annotation.

@@ -9,7 +9,7 @@ Separates input from output beans.
 Supports superclass inheritance definition for both bean types.
 
 Plugin is available in jitpack repository.  
-Latest build [![](https://jitpack.io/v/fabtesta/pcml2java-maven-plugin.svg)](https://jitpack.io/#fabtesta/pcml2java-maven-plugin)
+Latest build [![](https://jitpack.io/v/fabtesta/pcml2java-maven-plugin.svg)](https://jitpack.io/#fabtesta/pcml2java-maven-plugin)  
 Travis status [![Build Status](https://travis-ci.org/fabtesta/pcml2java-maven-plugin.svg?branch=master)](https://travis-ci.org/fabtesta/pcml2java-maven-plugin)
 
 ## Features

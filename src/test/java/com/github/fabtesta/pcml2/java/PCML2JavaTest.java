@@ -1,13 +1,12 @@
 package com.github.fabtesta.pcml2.java;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.github.fabtesta.pcml2java.PCML2Java;
+import org.junit.Test;
 
 import java.io.File;
 
-import org.junit.Test;
-
-import com.github.fabtesta.pcml2java.PCML2Java;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PCML2JavaTest {
 

@@ -147,6 +147,16 @@ public class PCML2Java {
 
                 JFieldVar constant = myClass.field(JMod.STATIC + JMod.PUBLIC + JMod.FINAL, String.class, nameRpg);
                 constant.init(JExpr.lit(nameRpg));
+
+                //Add length specifications
+                if(dataField.getAttributeValue("length") != null) {
+                    JFieldVar lengthConstant = myClass.field(JMod.STATIC + JMod.PUBLIC + JMod.FINAL, Integer.class, nameRpg + "_LENGTH");
+                    lengthConstant.init(JExpr.lit(Integer.parseInt(dataField.getAttributeValue("length"))));
+                }
+                if(dataField.getAttributeValue("count") != null) {
+                    JFieldVar sizeConstant = myClass.field(JMod.STATIC + JMod.PUBLIC + JMod.FINAL, Integer.class, nameRpg + "_SIZE");
+                    sizeConstant.init(JExpr.lit(Integer.parseInt(dataField.getAttributeValue("count"))));
+                }
             }
         }
 
@@ -159,20 +169,31 @@ public class PCML2Java {
             JType fieldType = null;
             JClass fieldArrayClass = null;
             Class<?> primitiveType = null;
+            boolean fieldIsArray = false;
             if (!dataField.getAttributeValue("type").equalsIgnoreCase("struct")) {
                 primitiveType = mapToJavaType(dataField.getAttributeValue("type"),
                         dataField.getAttributeValue("length"), dataField.getAttributeValue("precision"));
                 fieldType = codeModel.ref(primitiveType);
+
+                boolean primitiveFieldIsArray = dataField.getAttributeValue("count") != null ? Integer.parseInt(dataField.getAttributeValue("count")) > 1 : false;
+                JCodeModel tmpCodeModel = new JCodeModel();
+                if(primitiveFieldIsArray)
+                {
+                    JClass genericArray = tmpCodeModel.ref(ArrayList.class);
+                    fieldArrayClass = genericArray.narrow(fieldType);
+                    fieldIsArray = true;
+                }
             } else {
                 String structName = dataField.getAttributeValue("struct");
                 String structClassName = toTitleCamelCase(structName);
-                boolean structIsArray = Integer.parseInt(dataField.getAttributeValue("count")) > 1;
+                boolean structIsArray = dataField.getAttributeValue("count") != null ? Integer.parseInt(dataField.getAttributeValue("count")) > 1 : false;
                 JCodeModel tmpCodeModel = new JCodeModel();
                 fieldType = tmpCodeModel._class(packageName + "." + structClassName);
                 if(structIsArray)
                 {
                     JClass genericArray = tmpCodeModel.ref(ArrayList.class);
                     fieldArrayClass = genericArray.narrow(fieldType);
+                    fieldIsArray = true;
                 }
             }
             JFieldVar field = null;
@@ -182,9 +203,17 @@ public class PCML2Java {
                 field = myClass.field(JMod.PRIVATE, fieldType, name);
 
             // @javax.validation.constraints.Size(min = 3, max = 3)
-            if (beanValidation && primitiveType != null && isSizeAnnotationSupported(primitiveType)) {
+            if (beanValidation && (primitiveType != null && isSizeAnnotationSupported(primitiveType)) || fieldIsArray) {
                 JAnnotationUse sizeValidationAnnotation = field.annotate(javax.validation.constraints.Size.class);
-                sizeValidationAnnotation.param("max", Integer.parseInt(dataField.getAttributeValue("length")));
+                if(fieldIsArray) {
+                    sizeValidationAnnotation.param("max", Integer.parseInt(dataField.getAttributeValue("count")));
+                    if(primitiveType != null) {
+                        JAnnotationUse singleElementSizeValidationAnnotation = field.annotate(com.github.fabtesta.pcml2java.validators.ArrayOfStringsElementSize.class);
+                        singleElementSizeValidationAnnotation.param("singleElementSize", Integer.parseInt(dataField.getAttributeValue("length")));
+                    }
+                }
+                else
+                    sizeValidationAnnotation.param("max", Integer.parseInt(dataField.getAttributeValue("length")));
             }
 
             String capitalName = toTitleCamelCase(usagePrefix + nameRpg);

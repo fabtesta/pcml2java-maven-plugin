@@ -22,6 +22,8 @@
     <program name="LETTER_CODE_SERVICE" parseorder="DATA" path="/QSYS.LIB/TWIMBEE.LIB/LETTER_CODE.PGM" threadsafe="false">
         <data name="SENDER_NAME" type="char" length="3" usage="input" />
         <data name="SENDER_ADDRESS" type="char" length="3" usage="input" />
-        <data count="10" name="DATA" struct="LETTER_CODE" type="struct" usage="output"/>
+        <data name="ARRAY_OF_STRUCT" type="struct" struct="LETTER_CODE" count="10" usage="output"/>
+        <data name="SINGLE_STRUCT" type="struct" struct="LETTER_CODE" usage="output"/>
+        <data name="ARRAY_OF_STRING" type="char" length="2" count="5" usage="output"/>
     </program>
 </pcml>
